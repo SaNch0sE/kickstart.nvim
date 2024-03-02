@@ -6,6 +6,14 @@
 return {
   'neovim/nvim-lspconfig',
   config = function()
+    vim.api.nvim_create_autocmd('BufWritePre', {
+      pattern = { '*.tsx', '*.ts', '*.jsx', '*.js' },
+      group = vim.api.nvim_create_augroup('wassimkAutocmdEslintFormatting', {}),
+      callback = function()
+        vim.cmd('silent! TSToolsFixAll') -- fix using typescript-tools
+        vim.cmd('silent! EslintFixAll')  -- fix using eslint-lsp
+      end
+    })
     -- Switch for controlling whether you want autoformatting.
     --  Use :KickstartFormatToggle to toggle autoformatting on or off
     local format_is_enabled = true
@@ -46,12 +54,10 @@ return {
 
         -- Tsserver usually works poorly. Sorry you work with bad languages
         -- You can remove this line if you know what you're doing :)
-        if client.name == 'tsserver' then
+        if client.name == 'tsserver' or client.name == 'typescript-tools' then
           return
         end
 
-        -- Create an autocmd that will run *before* we save the buffer.
-        --  Run the formatting command for the LSP that has just attached.
         vim.api.nvim_create_autocmd('BufWritePre', {
           group = get_augroup(client),
           buffer = bufnr,
